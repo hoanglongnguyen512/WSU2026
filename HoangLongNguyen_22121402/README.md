@@ -1,5 +1,32 @@
 
 # Welcome to your CDK Python project!
+#COMP2029 - DevOps Project
+
+**Student:** Hoang Long Nguyen  
+**Student ID:** 22121402  
+**Week:** 02 - The Three Ways
+
+## Project Description
+
+This project uses **AWS CDK** to deploy a serverless Lambda function that monitors the availability and performance of a web resource.
+
+### Features
+- Measures HTTP status code
+- Measures response time (milliseconds)
+- Returns structured JSON result
+- Deployed using Infrastructure as Code (AWS CDK)
+
+### Target Website
+- https://www.westernsydney.edu.au/
+
+## Architecture
+- Runtime: Python 3.12
+- Infrastructure: AWS Lambda + AWS CDK
+- Region: ap-southeast-2 (Sydney)
+
+## How to Deploy
+```bash
+cdk deploy
 
 This is a blank project for CDK development with Python.
 
