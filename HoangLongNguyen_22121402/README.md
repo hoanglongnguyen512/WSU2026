@@ -7,7 +7,6 @@
 **Week:** 02 - The Three Ways
 
 ## Project Description
-
 This project uses **AWS CDK** to deploy a serverless Lambda function that monitors the availability and performance of a web resource.
 
 ### Features
@@ -24,9 +23,39 @@ This project uses **AWS CDK** to deploy a serverless Lambda function that monito
 - Infrastructure: AWS Lambda + AWS CDK
 - Region: ap-southeast-2 (Sydney)
 
+---
+**Week:** 03 - Building the Foundation of DevOps
+
+## Project Overview
+This project implements a **Web Health Monitoring System** using AWS serverless technologies.  
+The system periodically crawls a list of websites, collects availability and latency metrics, and visualizes the health status through CloudWatch.
+
+## Features (Week 3)
+- Web Crawler that monitors multiple websites
+- Collects **Availability** and **Latency** metrics
+- Publishes custom metrics to **Amazon CloudWatch** using Boto3
+- Automatically runs every **5 minutes** using EventBridge
+- CloudWatch **Alarms** for high latency and low availability
+- CloudWatch **Dashboard** for real-time visualization
+- Infrastructure as Code using **AWS CDK** (Python)
+
+## Architecture
+- **Compute:** AWS Lambda (Python 3.12)
+- **Scheduling:** Amazon EventBridge
+- **Monitoring:** Amazon CloudWatch (Metrics + Alarms + Dashboard)
+- **IaC:** AWS CDK
+- **Region:** ap-southeast-2 (Sydney)
+
+## Monitored Websites
+- https://www.westernsydney.edu.au/
+- https://www.google.com/
+- https://www.github.com/
+- https://aws.amazon.com/
+
 ## How to Deploy
 ```bash
 cdk deploy
+
 
 This is a blank project for CDK development with Python.
 

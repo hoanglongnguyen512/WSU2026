@@ -2,36 +2,78 @@ import json
 import time
 import urllib.request
 import urllib.error
+import boto3
+from datetime import datetime
 
-def handler(event, context):
-    url = "https://www.westernsydney.edu.au/"
-    
-    start_time = time.time()
-    
+cloudwatch = boto3.client('cloudwatch')
+
+# List of website have to be monitored
+WEBSITES = [
+    "https://www.westernsydney.edu.au/",
+    "https://www.google.com/",
+    "https://www.github.com/",
+    "https://aws.amazon.com/"
+]
+
+def put_metric (metric_name, value, website, unit= 'None'):
+    cloudwatch.put_metric_data(
+        Namespace='WebHealth',
+        MetricData= [
+            {
+                'MetricName': metric_name,
+                'Dimensions': [
+                    {'Name' : 'Website', 'Value': website}
+                ],
+                'Timestamp' : datetime.utcnow(),
+                'Value': value,
+                'Unit': unit
+            }
+        ]
+    )
+
+def check_website(url):
+    start = time.time()
     try:
         req = urllib.request.Request(url, method="GET")
         with urllib.request.urlopen(req, timeout=10) as response:
             status_code = response.getcode()
-            response_time = round((time.time() - start_time) * 1000, 2)  # milliseconds
-            
-            result = {
+            latency = round((time.time() - start) * 1000, 2)
+            availability = 1.0 if status_code == 200 else 0.0
+            return {
                 "url": url,
                 "status_code": status_code,
-                "response_time_ms": response_time,
-                "status": "UP" if status_code == 200 else "DOWN",
-                "message": "Website is reachable"
+                "latency_ms": latency,
+                "availability": availability,
+                "status": "UP" if availability == 1.0 else "DOWN"
             }
     except Exception as e:
-        response_time = round((time.time() - start_time) * 1000, 2)
-        result = {
+        latency = round((time.time() - start) * 1000, 2)
+        return {
             "url": url,
             "status_code": None,
-            "response_time_ms": response_time,
+            "latency_ms": latency,
+            "availability": 0.0,
             "status": "DOWN",
-            "message": str(e)
+            "error": str(e)
         }
+
+def handler(event, context):
+    results = []
+    
+    for url in WEBSITES:
+        result = check_website(url)
+        results.append(result)
+        
+        # Apply metrics on CloudWatch
+        put_metric('Availability', result['availability'], url, unit='None')
+        put_metric('Latency', result['latency_ms'], url, unit='Milliseconds')
+        
+        print(f"Checked {url}: {result['status']} | Latency: {result['latency_ms']}ms")
     
     return {
         "statusCode": 200,
-        "body": json.dumps(result, indent=2)
+        "body": json.dumps({
+            "timestamp": datetime.utcnow().isoformat(),
+            "results": results
+        }, indent=2)
     }
