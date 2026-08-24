@@ -1,12 +1,13 @@
-
-# Welcome to your CDK Python project!
-#COMP2029 - DevOps Project
+# COMP2029 - DevOps Project
 
 **Student:** Hoang Long Nguyen  
 **Student ID:** 22121402  
-**Week:** 02 - The Three Ways
 
-## Project Description
+---
+
+## Week 02 - The Three Ways
+
+### Project Description
 This project uses **AWS CDK** to deploy a serverless Lambda function that monitors the availability and performance of a web resource.
 
 ### Features
@@ -18,97 +19,63 @@ This project uses **AWS CDK** to deploy a serverless Lambda function that monito
 ### Target Website
 - https://www.westernsydney.edu.au/
 
-## Architecture
+### Architecture
 - Runtime: Python 3.12
 - Infrastructure: AWS Lambda + AWS CDK
 - Region: ap-southeast-2 (Sydney)
 
 ---
-**Week:** 03 - Building the Foundation of DevOps
 
-## Project Overview
-This project implements a **Web Health Monitoring System** using AWS serverless technologies.  
-The system periodically crawls a list of websites, collects availability and latency metrics, and visualizes the health status through CloudWatch.
+## Week 03 - Building the Foundation of DevOps
 
-## Features (Week 3)
+### Project Overview
+Extended the previous monitoring function into a full **Web Health Crawler** system. The system periodically checks multiple websites, collects availability and latency metrics, and visualizes the data using CloudWatch.
+
+### Features
 - Web Crawler that monitors multiple websites
 - Collects **Availability** and **Latency** metrics
 - Publishes custom metrics to **Amazon CloudWatch** using Boto3
-- Automatically runs every **5 minutes** using EventBridge
+- Automatically runs every **30 minutes** using EventBridge
 - CloudWatch **Alarms** for high latency and low availability
 - CloudWatch **Dashboard** for real-time visualization
 - Infrastructure as Code using **AWS CDK** (Python)
 
-## Architecture
+### Monitored Websites
+- https://www.westernsydney.edu.au/
+- https://www.google.com/
+- https://www.github.com/
+- https://aws.amazon.com/
+
+### Architecture
 - **Compute:** AWS Lambda (Python 3.12)
 - **Scheduling:** Amazon EventBridge
 - **Monitoring:** Amazon CloudWatch (Metrics + Alarms + Dashboard)
 - **IaC:** AWS CDK
 - **Region:** ap-southeast-2 (Sydney)
 
-## Monitored Websites
-- https://www.westernsydney.edu.au/
-- https://www.google.com/
-- https://www.github.com/
-- https://aws.amazon.com/
-
-## How to Deploy
+### How to Deploy
 ```bash
+source .venv/bin/activate
 cdk deploy
 
 
-This is a blank project for CDK development with Python.
+How to Test
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+Go to AWS Lambda Console → select WebHealthCrawler
+Click Test
+View results (availability + latency for each website)
+Go to CloudWatch → Dashboards → WebHealth-Dashboard
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+DevOps Principles Applied
 
-To manually create a virtualenv on MacOS and Linux:
+Automation: Fully automated monitoring and metric collection
+Monitoring & Feedback: Real-time metrics and alarms
+Infrastructure as Code: Entire infrastructure defined in CDK
+Continuous Improvement: Regular scheduled health checks
 
-```
-$ python3 -m venv .venv
-```
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
+Author
+Hoang Long Nguyen 
+Student ID : 22121402
 
-```
-$ source .venv/bin/activate
-```
-
-If you are a Windows platform, you would activate the virtualenv like this:
-
-```
-% .venv\Scripts\activate.bat
-```
-
-Once the virtualenv is activated, you can install the required dependencies.
-
-```
-$ pip install -r requirements.txt
-```
-
-At this point you can now synthesize the CloudFormation template for this code.
-
-```
-$ cdk synth
-```
-
-To add additional dependencies, for example other CDK libraries, just add
-them to your `requirements.txt` file and rerun the `python -m pip install -r requirements.txt`
-command.
-
-## Useful commands
-
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!
+Western Sydney University – Bachelor of ICT

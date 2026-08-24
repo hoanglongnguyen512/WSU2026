@@ -1,6 +1,7 @@
 from aws_cdk import (
     Stack,
     Duration,
+    RemovalPolicy,
     aws_lambda as _lambda,
     aws_events as events,
     aws_events_targets as targets,
@@ -22,8 +23,9 @@ class HoangLongNguyen22121402Stack(Stack):
             code=_lambda.Code.from_asset("lambda"),
             timeout=Duration.seconds(60),
             memory_size=256,
-            description="Web Health Crawler - Week 3"
+            description="Web Health Crawler - Week 3",
         )
+        web_crawler.apply_removal_policy(RemovalPolicy.DESTROY)
 
         # Allow Lambda apply metrics on CloudWatch
         web_crawler.add_to_role_policy(
@@ -35,10 +37,10 @@ class HoangLongNguyen22121402Stack(Stack):
 
         # Run Lambda automatically every 5 min
         rule = events.Rule(
-            self, "WebHealthSchedule",
-            schedule=events.Schedule.rate(Duration.minutes(5)),
-            description="Trigger WebHealth Crawler every 5 minutes"
-        )
+    self, "WebHealthSchedule",
+    schedule=events.Schedule.rate(Duration.minutes(30)),
+    description="Trigger WebHealth Crawler every 30 minutes"
+    )
         rule.add_target(targets.LambdaFunction(web_crawler))
 
         # Alarm when Latency very high (> 2000ms)
