@@ -7,6 +7,10 @@ from aws_cdk import (
     aws_events_targets as targets,
     aws_iam as iam,
     aws_cloudwatch as cloudwatch,
+    aws_sns as sns,
+    aws_sns_subscriptions as subscriptions,
+    aws_dynamodb as dynamodb,
+    aws_cloudwatch_actions as cw_actions,
 )
 from constructs import Construct
 
@@ -35,13 +39,23 @@ class HoangLongNguyen22121402Stack(Stack):
             )
         )
 
-        # Run Lambda automatically every 5 min
+        # Run Lambda automatically every 30 mins
         rule = events.Rule(
     self, "WebHealthSchedule",
     schedule=events.Schedule.rate(Duration.minutes(30)),
     description="Trigger WebHealth Crawler every 30 minutes"
     )
         rule.add_target(targets.LambdaFunction(web_crawler))
+
+        # SNS Topic for alarm notifications
+        alarm_topic = sns.Topic(
+            self, "WebHealthAlarmTopic",
+            display_name="WebHealth Alarm Notifications"
+        )
+        # Email subscription - change to your email
+        alarm_topic.add_subscription(
+            subscriptions.EmailSubscription("22121402@student.westernsydney.edu.au")
+        )
 
         # Alarm when Latency very high (> 2000ms)
         latency_alarm = cloudwatch.Alarm(
@@ -58,7 +72,7 @@ class HoangLongNguyen22121402Stack(Stack):
             alarm_description="Website latency is too high"
         )
 
-        # Alarm when Availability very low (< 1)
+        # Alarm when Availability very low (= 0 or < 1)
         availability_alarm = cloudwatch.Alarm(
             self, "LowAvailabilityAlarm",
             metric=cloudwatch.Metric(
@@ -72,13 +86,53 @@ class HoangLongNguyen22121402Stack(Stack):
             comparison_operator=cloudwatch.ComparisonOperator.LESS_THAN_THRESHOLD,
             alarm_description="Website availability dropped"
         )
+
+        # Apply SNS after Alarm was created
+        latency_alarm.add_alarm_action(
+            cw_actions.SnsAction(alarm_topic)
+        )
+        availability_alarm.add_alarm_action(
+            cw_actions.SnsAction(alarm_topic)
+        )
+
         # CloudWatch Dashboard
         dashboard = cloudwatch.Dashboard(
             self, "WebHealthDashboard",
             dashboard_name="WebHealth-Dashboard"
         )
 
-        # Widget cho Latency
+        # DynamoDB table to log alarms
+        alarm_table = dynamodb.Table(
+            self, "WebHealthAlarmTable",
+            partition_key=dynamodb.Attribute(
+                name="alarm_id",
+                type=dynamodb.AttributeType.STRING
+            ),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=RemovalPolicy.DESTROY
+        )
+
+        # Lambda to log SNS alarms into DynamoDB
+        alarm_logger = _lambda.Function(
+            self, "AlarmLogger",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="alarm_logger.handler",
+            code=_lambda.Code.from_asset("lambda"),
+            timeout=Duration.seconds(30),
+            environment={
+                "ALARM_TABLE_NAME": alarm_table.table_name
+            }
+        )
+        alarm_logger.apply_removal_policy(RemovalPolicy.DESTROY)
+
+        alarm_table.grant_write_data(alarm_logger)
+
+        alarm_topic.add_subscription(
+            subscriptions.LambdaSubscription(alarm_logger)
+        )
+        
+
+        # Widget for Latency
         latency_widget = cloudwatch.GraphWidget(
             title="Website Latency (ms)",
             left=[
@@ -92,7 +146,7 @@ class HoangLongNguyen22121402Stack(Stack):
             width=12
         )
 
-        # Widget cho Availability
+        # Widget for Availability
         availability_widget = cloudwatch.GraphWidget(
             title="Website Availability",
             left=[
