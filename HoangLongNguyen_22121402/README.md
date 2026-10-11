@@ -2,6 +2,7 @@
 
 **Student:** Hoang Long Nguyen  
 **Student ID:** 22121402  
+**University:** Western Sydney University – Bachelor of ICT
 
 ---
 
@@ -29,22 +30,16 @@ This project uses **AWS CDK** to deploy a serverless Lambda function that monito
 ## Week 03 - Building the Foundation of DevOps
 
 ### Project Overview
-Extended the previous monitoring function into a full **Web Health Crawler** system. The system periodically checks multiple websites, collects availability and latency metrics, and visualizes the data using CloudWatch.
+Extended the monitoring function into a full **Web Health Crawler** system. The system periodically checks multiple websites, collects availability and latency metrics, and visualizes the data using CloudWatch.
 
 ### Features
-- Web Crawler that monitors multiple websites
+- Monitors multiple websites
 - Collects **Availability** and **Latency** metrics
 - Publishes custom metrics to **Amazon CloudWatch** using Boto3
-- Automatically runs every **30 minutes** using EventBridge
+- Runs every **30 minutes** using EventBridge
 - CloudWatch **Alarms** for high latency and low availability
 - CloudWatch **Dashboard** for real-time visualization
 - Infrastructure as Code using **AWS CDK** (Python)
-
-### Monitored Websites
-- https://www.westernsydney.edu.au/
-- https://www.google.com/
-- https://www.github.com/
-- https://aws.amazon.com/
 
 ### Architecture
 - **Compute:** AWS Lambda (Python 3.12)
@@ -58,24 +53,54 @@ Extended the previous monitoring function into a full **Web Health Crawler** sys
 source .venv/bin/activate
 cdk deploy
 
+### How to Test
+1. Go to **AWS Lambda Console** → select `WebHealthCrawler`
+2. Click **Test**
+3. View results (availability + latency for each website)
+4. Go to **CloudWatch → Dashboards → WebHealth-Dashboard**
+ 
+ ---
 
-How to Test
+## Applied Project - Dynamic Website Management
 
-Go to AWS Lambda Console → select WebHealthCrawler
-Click Test
-View results (availability + latency for each website)
-Go to CloudWatch → Dashboards → WebHealth-Dashboard
+### Overview : 
+The system has been extended to support dynamic website management using DynamoDB and a public REST API. Websites are no longer hardcoded.
 
-DevOps Principles Applied
+### Features : 
+- Websites are stored in a **DynamoDB table** (`WebsiteTable`)
+- Public **REST API** (API Gateway + Lambda) for managing websites
+- Crawler reads the website list from DynamoDB on every run
+- Full Infrastructure as Code with AWS CDK
 
-Automation: Fully automated monitoring and metric collection
-Monitoring & Feedback: Real-time metrics and alarms
-Infrastructure as Code: Entire infrastructure defined in CDK
-Continuous Improvement: Regular scheduled health checks
+### API URL
+https://8fx0uzj22b.execute-api.ap-southeast-2.amazonaws.com/prod/
+
+### How to Test the API
+```powershell
+# Add a website
+Invoke-RestMethod -Method Post -Uri "https://8fx0uzj22b.execute-api.ap-southeast-2.amazonaws.com/prod/websites" -ContentType "application/json" -Body '{"url":"https://www.github.com"}'
+
+# List websites
+Invoke-RestMethod -Method Get -Uri "https://8fx0uzj22b.execute-api.ap-southeast-2.amazonaws.com/prod/websites"
+
+### Architecture : 
+- DynamoDB: WebsiteTable (stores website URLs)
+- Lambda: WebsiteApi (CRUD handler)
+- API Gateway: Public REST API
+- Crawler: Reads websites from DynamoDB
 
 
-Author
-Hoang Long Nguyen 
-Student ID : 22121402
+### DevOps Principles Applied :
 
+- Automation: Fully automated monitoring and metric collection
+- Monitoring & Feedback: Real-time metrics, alarms, and dashboard
+- Infrastructure as Code: Entire infrastructure defined in CDK
+- Continuous Improvement: Dynamic website management via API
+
+---
+
+**Author**
+
+Hoang Long Nguyen
+Student ID: 22121402
 Western Sydney University – Bachelor of ICT

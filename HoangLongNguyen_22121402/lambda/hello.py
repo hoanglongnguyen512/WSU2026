@@ -3,17 +3,20 @@ import time
 import urllib.request
 import urllib.error
 import boto3
+import os
 from datetime import datetime
 
 cloudwatch = boto3.client('cloudwatch')
+dynamodb = boto3.resource('dynamodb')
+website_table = dynamodb.Table(os.environ.get("WEBSITE_TABLE_NAME", "WebsiteTable"))
 
-# List of website have to be monitored
-WEBSITES = [
-    "https://www.westernsydney.edu.au/",
-    "https://www.google.com/",
-    "https://www.github.com/",
-    "https://aws.amazon.com/"
-]
+def get_websites():
+    try:
+        response = website_table.scan()
+        return [item["url"] for item in response.get("Items", [])]
+    except Exception as e:
+        print(f"Error reading websites: {e}")
+        return []
 
 def put_metric (metric_name, value, website, unit= 'None'):
     cloudwatch.put_metric_data(
@@ -58,9 +61,16 @@ def check_website(url):
         }
 
 def handler(event, context):
+    websites = get_websites()
+    if not websites:
+        return{
+            "statusCode" : 200,
+            "body" : json.dumps({"message": "No website to monitor"})
+        }
+
     results = []
     
-    for url in WEBSITES:
+    for url in websites:
         result = check_website(url)
         results.append(result)
         

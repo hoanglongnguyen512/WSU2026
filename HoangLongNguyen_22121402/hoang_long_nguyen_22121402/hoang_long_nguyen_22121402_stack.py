@@ -11,6 +11,7 @@ from aws_cdk import (
     aws_sns_subscriptions as subscriptions,
     aws_dynamodb as dynamodb,
     aws_cloudwatch_actions as cw_actions,
+    aws_apigateway as apigateway,
 )
 from constructs import Construct
 
@@ -101,7 +102,7 @@ class HoangLongNguyen22121402Stack(Stack):
             dashboard_name="WebHealth-Dashboard"
         )
 
-        # DynamoDB table to log alarms
+                # DynamoDB table to log alarms
         alarm_table = dynamodb.Table(
             self, "WebHealthAlarmTable",
             partition_key=dynamodb.Attribute(
@@ -110,6 +111,43 @@ class HoangLongNguyen22121402Stack(Stack):
             ),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
             removal_policy=RemovalPolicy.DESTROY
+        )
+
+        # DynamoDB table for website list
+        website_table = dynamodb.Table(
+            self, "WebsiteTable",
+            partition_key=dynamodb.Attribute(
+                name="url",
+                type=dynamodb.AttributeType.STRING
+            ),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=RemovalPolicy.DESTROY
+        )
+
+        website_table.grant_read_data(web_crawler)
+        
+        web_crawler.add_environment("WEBSITE_TABLE_NAME", website_table.table_name)
+
+        # Lambda for Website CRUD API
+        website_api_lambda = _lambda.Function(
+            self, "WebsiteApi",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="website_api.handler",
+            code=_lambda.Code.from_asset("lambda"),
+            timeout=Duration.seconds(30),
+            environment={
+                "WEBSITE_TABLE_NAME": website_table.table_name
+            }
+        )
+        website_api_lambda.apply_removal_policy(RemovalPolicy.DESTROY)
+        website_table.grant_read_write_data(website_api_lambda)
+
+        # API Gateway
+        api = apigateway.LambdaRestApi(
+            self, "WebsiteApiGateway",
+            handler=website_api_lambda,
+            proxy=True,
+            rest_api_name="WebsiteCRUDApi"
         )
 
         # Lambda to log SNS alarms into DynamoDB
@@ -132,7 +170,7 @@ class HoangLongNguyen22121402Stack(Stack):
         )
         
 
-        # Widget for Latency
+        # Widget for Latency\
         latency_widget = cloudwatch.GraphWidget(
             title="Website Latency (ms)",
             left=[
@@ -140,7 +178,8 @@ class HoangLongNguyen22121402Stack(Stack):
                     namespace="WebHealth",
                     metric_name="Latency",
                     statistic="Average",
-                    period=Duration.minutes(5)
+                    period=Duration.minutes(5),
+                    dimensions_map={"Website": "https://www.westernsydney.edu.au/"}
                 )
             ],
             width=12
@@ -154,7 +193,8 @@ class HoangLongNguyen22121402Stack(Stack):
                     namespace="WebHealth",
                     metric_name="Availability",
                     statistic="Average",
-                    period=Duration.minutes(5)
+                    period=Duration.minutes(5),
+                    dimensions_map={"Website": "https://www.westernsydney.edu.au/"}
                 )
             ],
             width=12
