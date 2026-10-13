@@ -6,6 +6,11 @@
 
 ---
 
+## Project Overview
+This project implements a serverless web health monitoring system using AWS CDK. The system periodically checks the availability and latency of multiple websites, publishes metrics to CloudWatch, triggers alarms, and supports dynamic website management through a public REST API.
+
+---
+
 ## Week 02 - The Three Ways
 
 ### Project Description
@@ -20,17 +25,12 @@ This project uses **AWS CDK** to deploy a serverless Lambda function that monito
 ### Target Website
 - https://www.westernsydney.edu.au/
 
-### Architecture
-- Runtime: Python 3.12
-- Infrastructure: AWS Lambda + AWS CDK
-- Region: ap-southeast-2 (Sydney)
-
 ---
 
 ## Week 03 - Building the Foundation of DevOps
 
-### Project Overview
-Extended the monitoring function into a full **Web Health Crawler** system. The system periodically checks multiple websites, collects availability and latency metrics, and visualizes the data using CloudWatch.
+### Description
+Extended the system into a multi-website health crawler with CloudWatch integration.
 
 ### Features
 - Monitors multiple websites
@@ -41,30 +41,74 @@ Extended the monitoring function into a full **Web Health Crawler** system. The 
 - CloudWatch **Dashboard** for real-time visualization
 - Infrastructure as Code using **AWS CDK** (Python)
 
-### Architecture
-- **Compute:** AWS Lambda (Python 3.12)
-- **Scheduling:** Amazon EventBridge
-- **Monitoring:** Amazon CloudWatch (Metrics + Alarms + Dashboard)
-- **IaC:** AWS CDK
-- **Region:** ap-southeast-2 (Sydney)
+---
 
-### How to Deploy
-```bash
-source .venv/bin/activate
-cdk deploy
+## Week 04 - Building the Foundation of DevOps (Continued)
 
-### How to Test
-1. Go to **AWS Lambda Console** → select `WebHealthCrawler`
-2. Click **Test**
-3. View results (availability + latency for each website)
-4. Go to **CloudWatch → Dashboards → WebHealth-Dashboard**
- 
- ---
+### Description
+Continued refining monitoring practices and infrastructure setup.
+
+---
+
+## Week 05 - The First Way (Flow)
+
+### Description
+Focused on improving the flow of the monitoring pipeline and automation.
+
+---
+
+## Week 06 - The First Way (Continued)
+
+### Description
+Added SNS notifications for CloudWatch alarms and began logging alarm events.
+
+### Features
+- SNS topic for alarm notifications
+- Email subscription for alerts
+
+---
+
+## Week 07 - The Second Way (Feedback)
+
+### Description
+Implemented alarm logging into DynamoDB for historical tracking.
+
+### Features
+- DynamoDB table (`WebHealthAlarmTable`) to store alarm events
+- Lambda function (`AlarmLogger`) to process SNS messages and write to DynamoDB
+
+---
+
+## Week 09 - The Third Way (Continual Learning & Experimentation)
+
+### Description
+Focused on testing practices and continuous improvement of the monitoring system.
+
+---
+
+## Week 10 - Testing
+
+### Description
+Integrated unit, functional, and integration tests into the project.
+
+### Tests Implemented
+- **10** Unit Tests
+- **8** Functional Tests
+- **2** Integration Tests
+
+---
+
+## Week 11 - Continual Learning
+
+### Description
+Further refinement of the system and documentation.
+
+---
 
 ## Applied Project - Dynamic Website Management
 
 ### Overview : 
-The system has been extended to support dynamic website management using DynamoDB and a public REST API. Websites are no longer hardcoded.
+Extended the system to support dynamic website management using DynamoDB and a public REST API. Websites are no longer hardcoded.
 
 ### Features : 
 - Websites are stored in a **DynamoDB table** (`WebsiteTable`)
@@ -72,7 +116,18 @@ The system has been extended to support dynamic website management using DynamoD
 - Crawler reads the website list from DynamoDB on every run
 - Full Infrastructure as Code with AWS CDK
 
-### API URL
+### Monitored Websites
+The following websites are currently being monitored (managed via DynamoDB):
+- https://www.google.com
+- https://www.westernsydney.edu.au
+- https://www.github.com
+- https://aws.amazon.com
+
+### API Endpoints
+- `GET /websites` — List all monitored websites
+- `POST /websites` — Add a new website
+
+### API BASE URL
 https://8fx0uzj22b.execute-api.ap-southeast-2.amazonaws.com/prod/
 
 ### How to Test the API
@@ -82,20 +137,64 @@ Invoke-RestMethod -Method Post -Uri "https://8fx0uzj22b.execute-api.ap-southeast
 
 # List websites
 Invoke-RestMethod -Method Get -Uri "https://8fx0uzj22b.execute-api.ap-southeast-2.amazonaws.com/prod/websites"
+```
+
+
+### Running Tests
+This project includes unit, functional, and integration tests for the web crawler.
+
+### Install test dependencies
+```bash
+pip install pytest boto3
+```
+
+## Run all tests
+```bash
+pytest -v
+```
+
+## Run specific test files
+
+# Unit tests
+```bash
+pytest tests/test_unit.py -v 
+```
+
+# Functional tests 
+```bash
+pytest tests/test_functional.py -v
+```
+
+# Integration tests
+```bash
+pytest tests/test_integration.py -v
+```
+
+### Test Summary
+- 10 unit tests 
+- 8 functional tests 
+- 2 integration tests
+
+---
 
 ### Architecture : 
-- DynamoDB: WebsiteTable (stores website URLs)
-- Lambda: WebsiteApi (CRUD handler)
-- API Gateway: Public REST API
-- Crawler: Reads websites from DynamoDB
+- **Compute:** AWS Lambda (Python 3.12)
+- **Scheduling:** Amazon EventBridge
+- **Monitoring:** Amazon CloudWatch (Metrics, Alarms, Dashboard)
+- **Notifications:** Amazon SNS
+- **Storage:** Amazon DynamoDB
+- **API:** Amazon API Gateway
+- **IaC:** AWS CDK
+- **Region:** ap-southeast-2 (Sydney)
 
+---
 
 ### DevOps Principles Applied :
 
-- Automation: Fully automated monitoring and metric collection
-- Monitoring & Feedback: Real-time metrics, alarms, and dashboard
+- Automation: Scheduled monitoring and metric collection
+- Monitoring & Feedback: CloudWatch metrics, alarms, and SNS notifications
 - Infrastructure as Code: Entire infrastructure defined in CDK
-- Continuous Improvement: Dynamic website management via API
+- Continuous Improvement: Dynamic website management and comprehensive testing
 
 ---
 
