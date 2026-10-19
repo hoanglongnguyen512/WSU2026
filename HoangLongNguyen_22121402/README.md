@@ -127,6 +127,29 @@ The following websites are currently being monitored (managed via DynamoDB):
 - `GET /websites` — List all monitored websites
 - `POST /websites` — Add a new website
 
+## API Documentation
+
+Base URL: `https://8fx0uzj22b.execute-api.ap-southeast-2.amazonaws.com/prod`
+
+### GET /websites
+List all monitored websites.
+
+**Response:**
+```json
+[{"url": "https://www.google.com"}]
+POST /websites
+Add a new website to monitor.
+Request:S
+JSON{"url": "https://example.com"}
+Response:
+JSON{"message": "Website added", "url": "https://example.com"}
+DELETE /websites/{url}
+Remove a website from monitoring.
+Example:
+textDELETE /websites/https://example.com
+Response:
+JSON{"message": "Website deleted"}
+
 ### API BASE URL
 https://8fx0uzj22b.execute-api.ap-southeast-2.amazonaws.com/prod/
 
