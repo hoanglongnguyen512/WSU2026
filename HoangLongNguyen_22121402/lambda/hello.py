@@ -10,6 +10,12 @@ cloudwatch = boto3.client('cloudwatch')
 dynamodb = boto3.resource('dynamodb')
 website_table = dynamodb.Table(os.environ.get("WEBSITE_TABLE_NAME", "WebsiteTable"))
 
+def normalize_url(url):
+    url = url.strip()
+    if not url.endswith("/"):
+        url += "/"
+    return url
+
 def get_websites():
     try:
         response = website_table.scan()
@@ -19,6 +25,7 @@ def get_websites():
         return []
 
 def put_metric (metric_name, value, website, unit= 'None'):
+    website = normalize_url(website)
     cloudwatch.put_metric_data(
         Namespace='WebHealth',
         MetricData= [
@@ -35,6 +42,7 @@ def put_metric (metric_name, value, website, unit= 'None'):
     )
 
 def check_website(url):
+    url = normalize_url(url)
     start = time.time()
     try:
         req = urllib.request.Request(url, method="GET")

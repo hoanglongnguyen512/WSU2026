@@ -58,35 +58,54 @@ class HoangLongNguyen22121402Stack(Stack):
             subscriptions.EmailSubscription("22121402@student.westernsydney.edu.au")
         )
 
-        # Alarm when Latency very high (> 2000ms)
-        latency_alarm = cloudwatch.Alarm(
-            self, "HighLatencyAlarm",
-            metric=cloudwatch.Metric(
-                namespace="WebHealth",
-                metric_name="Latency",
-                statistic="Average",
-                period=Duration.minutes(5)
-            ),
-            threshold=2000,
-            evaluation_periods=1,
-            comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
-            alarm_description="Website latency is too high"
-        )
+        # List of website need to monitor
+        websites = [
+            "https://www.westernsydney.edu.au/",
+            "https://www.google.com/",
+            "https://www.github.com/",
+            "https://aws.amazon.com/",
+            "https://this-website-does-not-exist-12345.com"
+        ]
 
-        # Alarm when Availability very low (= 0 or < 1)
-        availability_alarm = cloudwatch.Alarm(
-            self, "LowAvailabilityAlarm",
-            metric=cloudwatch.Metric(
-                namespace="WebHealth",
-                metric_name="Availability",
-                statistic="Average",
-                period=Duration.minutes(5)
-            ),
-            threshold=1.0,
-            evaluation_periods=1,
-            comparison_operator=cloudwatch.ComparisonOperator.LESS_THAN_THRESHOLD,
-            alarm_description="Website availability dropped"
-        )
+        # Create alarm for each website
+        for website in websites:
+            clean_name = website.replace("https://", "").replace("/", "").replace(".", "-")
+
+            # Alarm Availability
+            availability_alarm = cloudwatch.Alarm(
+                self, f"AvailabilityAlarm-{clean_name}",
+                metric=cloudwatch.Metric(
+                    namespace="WebHealth",
+                    metric_name="Availability",
+                    statistic="Average",
+                    period=Duration.minutes(5),
+                    dimensions_map={"Website": website}
+                ),
+                threshold=1.0,
+                evaluation_periods=1,
+                comparison_operator=cloudwatch.ComparisonOperator.LESS_THAN_THRESHOLD,
+                alarm_description=f"Availability dropped for {website}",
+                alarm_name=f"Availability-{clean_name}"
+            )
+            availability_alarm.add_alarm_action(cw_actions.SnsAction(alarm_topic))
+
+            # Alarm Latency
+            latency_alarm = cloudwatch.Alarm(
+                self, f"LatencyAlarm-{clean_name}",
+                metric=cloudwatch.Metric(
+                    namespace="WebHealth",
+                    metric_name="Latency",
+                    statistic="Average",
+                    period=Duration.minutes(5),
+                    dimensions_map={"Website": website}
+                ),
+                threshold=2000,
+                evaluation_periods=1,
+                comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+                alarm_description=f"Latency too high for {website}",
+                alarm_name=f"Latency-{clean_name}"
+            )
+            latency_alarm.add_alarm_action(cw_actions.SnsAction(alarm_topic))
 
         # Apply SNS after Alarm was created
         latency_alarm.add_alarm_action(
@@ -170,16 +189,44 @@ class HoangLongNguyen22121402Stack(Stack):
         )
         
 
-        # Widget for Latency\
+        # Widget for Latency
         latency_widget = cloudwatch.GraphWidget(
             title="Website Latency (ms)",
             left=[
                 cloudwatch.Metric(
                     namespace="WebHealth",
                     metric_name="Latency",
+                    dimensions_map={"Website": "https://www.google.com/"},
                     statistic="Average",
                     period=Duration.minutes(5),
-                    dimensions_map={"Website": "https://www.westernsydney.edu.au/"}
+                ),
+                cloudwatch.Metric(
+                    namespace="WebHealth",
+                    metric_name="Latency",
+                    dimensions_map={"Website": "https://www.github.com/"},
+                    statistic="Average",
+                    period=Duration.minutes(5)
+                ),
+                cloudwatch.Metric(
+                    namespace="WebHealth",
+                    metric_name="Latency",
+                    dimensions_map={"Website": "https://aws.amazon.com/"},
+                    statistic="Average",
+                    period=Duration.minutes(5)
+                ),
+                cloudwatch.Metric(
+                    namespace="WebHealth",
+                    metric_name="Latency",
+                    dimensions_map={"Website": "https://www.westernsydney.edu.au/"},
+                    statistic="Average",
+                    period=Duration.minutes(5)
+                ),
+                cloudwatch.Metric(
+                    namespace="WebHealth",
+                    metric_name="Latency",
+                    dimensions_map={"Website": "https://this-website-does-not-exist-12345.com/"},
+                    statistic="Average",
+                    period=Duration.minutes(5)
                 )
             ],
             width=12
@@ -192,13 +239,76 @@ class HoangLongNguyen22121402Stack(Stack):
                 cloudwatch.Metric(
                     namespace="WebHealth",
                     metric_name="Availability",
+                    dimensions_map={"Website": "https://www.google.com/"},
                     statistic="Average",
                     period=Duration.minutes(5),
-                    dimensions_map={"Website": "https://www.westernsydney.edu.au/"}
+                ),
+                cloudwatch.Metric(
+                    namespace="WebHealth",
+                    metric_name="Availability",
+                    dimensions_map={"Website": "https://www.github.com/"},
+                    statistic="Average",
+                    period=Duration.minutes(5)
+                ),
+                cloudwatch.Metric(
+                    namespace="WebHealth",
+                    metric_name="Availability",
+                    dimensions_map={"Website": "https://aws.amazon.com/"},
+                    statistic="Average",
+                    period=Duration.minutes(5)
+                ),
+                cloudwatch.Metric(
+                    namespace="WebHealth",
+                    metric_name="Availability",
+                    dimensions_map={"Website": "https://www.westernsydney.edu.au/"},
+                    statistic="Average",
+                    period=Duration.minutes(5)
+                ),
+                cloudwatch.Metric(
+                    namespace="WebHealth",
+                    metric_name="Availability",
+                    dimensions_map={"Website": "https://this-website-does-not-exist-12345.com/"},
+                    statistic="Average",
+                    period=Duration.minutes(5)
                 )
             ],
             width=12
         )
+
+               # Alarm for fake website - Availability
+        fake_availability_alarm = cloudwatch.Alarm(
+            self, "FakeWebsiteAvailabilityAlarm",
+            metric=cloudwatch.Metric(
+                namespace="WebHealth",
+                metric_name="Availability",
+                dimensions_map={"Website": "https://this-website-does-not-exist-12345.com/"},
+                statistic="Average",
+                period=Duration.minutes(5)
+            ),
+            threshold=1.0,
+            evaluation_periods=1,
+            comparison_operator=cloudwatch.ComparisonOperator.LESS_THAN_THRESHOLD,
+            alarm_description="Availability dropped for fake website"
+        )
+        fake_availability_alarm.add_alarm_action(cw_actions.SnsAction(alarm_topic))
+
+        # Alarm for fake website - Latency
+        fake_latency_alarm = cloudwatch.Alarm(
+            self, "FakeWebsiteLatencyAlarm",
+            metric=cloudwatch.Metric(
+                namespace="WebHealth",
+                metric_name="Latency",
+                dimensions_map={"Website": "https://this-website-does-not-exist-12345.com/"},
+                statistic="Average",
+                period=Duration.minutes(5)
+            ),
+            threshold=2000,
+            evaluation_periods=1,
+            comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+            alarm_description="Latency too high for fake website"
+        )
+        fake_latency_alarm.add_alarm_action(cw_actions.SnsAction(alarm_topic))
+
 
         # Add 2 widget into Dashboard
         dashboard.add_widgets(latency_widget, availability_widget)
